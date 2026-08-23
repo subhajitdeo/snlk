@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NSE Data – CORS Test</title>
+    <title>NSE Crawler – CORS Test</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
             background: #0b1120;
@@ -17,20 +13,10 @@
             padding: 2rem;
             min-height: 100vh;
         }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        h1 {
-            font-weight: 400;
-            font-size: 1.6rem;
-            margin-bottom: 0.5rem;
-        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        h1 { font-weight: 400; font-size: 1.6rem; margin-bottom: 0.2rem; }
         h1 span { color: #60a5fa; }
-        .sub {
-            color: #94a3b8;
-            margin-bottom: 2rem;
-        }
+        .sub { color: #94a3b8; margin-bottom: 2rem; }
         .btn-group {
             display: flex;
             flex-wrap: wrap;
@@ -48,23 +34,13 @@
             transition: 0.2s;
             border: 1px solid #334155;
         }
-        .btn:hover {
-            background: #334155;
-        }
-        .btn-primary {
-            background: #2563eb;
-            border-color: #2563eb;
-        }
-        .btn-primary:hover {
-            background: #1d4ed8;
-        }
-        .btn-warning {
-            background: #d97706;
-            border-color: #d97706;
-        }
-        .btn-warning:hover {
-            background: #b45309;
-        }
+        .btn:hover { background: #334155; }
+        .btn-primary { background: #2563eb; border-color: #2563eb; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-warning { background: #d97706; border-color: #d97706; }
+        .btn-warning:hover { background: #b45309; }
+        .btn-secondary { background: #7c3aed; border-color: #7c3aed; }
+        .btn-secondary:hover { background: #6d28d9; }
         .result-box {
             background: #1e293b;
             border-radius: 12px;
@@ -81,7 +57,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-        .result-box .raw {
+        .raw {
             font-family: 'JetBrains Mono', 'Fira Code', monospace;
             font-size: 0.8rem;
             white-space: pre-wrap;
@@ -89,15 +65,13 @@
             max-height: 500px;
             overflow: auto;
             color: #cbd5e1;
+            background: #0f172a;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
         }
-        .error-msg {
-            color: #f87171;
-            padding: 0.5rem 0;
-        }
-        .success-msg {
-            color: #4ade80;
-            padding: 0.5rem 0;
-        }
+        .error-msg { color: #f87171; padding: 0.5rem 0; }
+        .success-msg { color: #4ade80; padding: 0.5rem 0; }
         .info-block {
             background: #0f172a;
             padding: 1rem 1.5rem;
@@ -107,32 +81,6 @@
             color: #fde68a;
             font-size: 0.9rem;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-        }
-        th {
-            text-align: left;
-            padding: 0.5rem 0.8rem;
-            background: #0f172a;
-            color: #94a3b8;
-            border-bottom: 1px solid #334155;
-        }
-        td {
-            padding: 0.4rem 0.8rem;
-            border-bottom: 1px solid #2d3748;
-        }
-        .badge {
-            display: inline-block;
-            padding: 0.1rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.65rem;
-            font-weight: 600;
-        }
-        .badge-ce { background: #1e3a5f; color: #60a5fa; }
-        .badge-pe { background: #5f1e3a; color: #f472b6; }
         .spinner {
             display: inline-block;
             width: 18px;
@@ -145,28 +93,43 @@
             vertical-align: middle;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+        th { text-align: left; padding: 0.5rem 0.8rem; background: #0f172a; color: #94a3b8; border-bottom: 1px solid #334155; }
+        td { padding: 0.4rem 0.8rem; border-bottom: 1px solid #2d3748; }
+        .badge {
+            display: inline-block; padding: 0.1rem 0.5rem; border-radius: 12px;
+            font-size: 0.65rem; font-weight: 600;
+        }
+        .badge-ce { background: #1e3a5f; color: #60a5fa; }
+        .badge-pe { background: #5f1e3a; color: #f472b6; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📡 <span>NSE</span> · CORS Diagnosis</h1>
-    <div class="sub">Testing your Supabase endpoint — bypassing CORS to see the real response.</div>
+    <h1>📡 <span>New</span> Crawler · CORS Test</h1>
+    <div class="sub">Endpoint: <code style="color:#60a5fa;">/crawler</code> &nbsp;|&nbsp; Auth: Anon Key</div>
 
     <div class="btn-group">
-        <button class="btn btn-primary" id="directBtn">❶ Direct Fetch (with Anon Key)</button>
-        <button class="btn btn-warning" id="proxyBtn">❷ Via CORS Proxy (no auth header)</button>
+        <button class="btn btn-primary" id="directBtn">❶ Direct Fetch (with Key)</button>
+        <button class="btn btn-warning" id="proxyBtn">❷ Via Proxy 1 (allorigins)</button>
+        <button class="btn btn-secondary" id="proxyBtn2">❸ Via Proxy 2 (corsproxy.io)</button>
     </div>
 
     <div id="output">
-        <div class="info-block">Click a button above to test. The proxy will reveal the raw data even if CORS is blocked.</div>
+        <div class="info-block">Click a button above. If direct fails with CORS, try the proxies — they bypass the browser restriction.</div>
     </div>
 </div>
 
 <script>
     (function() {
-        const URL = 'https://kdneyzemvqzhwzztflvq.supabase.co/functions/v1/fetch-nse';
-        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtkbmV5emVtdnF6aHd6enRmbHZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxNDI2MzcsImV4cCI6MjA5NzcxODYzN30.qtbbxJqo6Jh4rQZ3QdpH5w7B6j3xrv_mOJ9gBQR3F8E';
+        const URL = 'https://lvionokaieygaarmcuwo.supabase.co/functions/v1/crawler';
+        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2aW9ub2thaWV5Z2Fhcm1jdXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0OTA0OTAsImV4cCI6MjEwMzA2NjQ5MH0.Dew0TZDaaL_v8F2VtdRoNza9kis22vf6wg7iklE692Q';
 
         const output = document.getElementById('output');
 
@@ -174,80 +137,73 @@
             output.innerHTML = `<div class="result-box"><span class="spinner"></span> Request in progress...</div>`;
         }
 
-        function renderResult(title, data, isError = false) {
+        function renderResult(title, body, isError = false, status = '') {
             let html = `<div class="result-box"><h3>${title}</h3>`;
-
+            if (status) {
+                html += `<div style="color:#94a3b8; margin-bottom:0.5rem;">Status: ${status}</div>`;
+            }
             if (isError) {
-                html += `<div class="error-msg">❌ ${data}</div>`;
+                html += `<div class="error-msg">❌ ${body}</div>`;
             } else {
-                html += `<div class="success-msg">✅ Request completed (status ${data.status || 'OK'})</div>`;
-                if (data.body) {
-                    // Try to pretty-print JSON
-                    let raw = data.body;
-                    try {
-                        const parsed = JSON.parse(raw);
-                        raw = JSON.stringify(parsed, null, 2);
-                        // If it's the proxy response, it might be wrapped
-                        if (parsed.contents) {
-                            raw = JSON.stringify(parsed.contents, null, 2);
-                        }
-                    } catch (_) { /* keep raw */ }
-                    html += `<div class="raw">${raw}</div>`;
-                }
+                html += `<div class="success-msg">✅ Request completed</div>`;
+                // If body is JSON, try to pretty print
+                let display = body;
+                try {
+                    const parsed = JSON.parse(body);
+                    display = JSON.stringify(parsed, null, 2);
+                    // Try to render a table if it's CE/PE data
+                    const tableHtml = tryRenderTable(parsed);
+                    if (tableHtml) {
+                        display = tableHtml + '<hr style="border-color:#334155; margin:1rem 0;" />' + display;
+                    }
+                } catch (_) { /* keep as is */ }
+                html += `<div class="raw">${display}</div>`;
             }
             html += `</div>`;
             output.innerHTML = html;
         }
 
-        // ---------- Helper: render a table from CE/PE data ----------
-        function renderTableFromJson(json) {
+        // Attempt to render CE/PE data as a table (for convenience)
+        function tryRenderTable(json) {
             let records = json.rawData?.records?.data || json.records?.data || json.data || [];
+            if (!Array.isArray(records) || records.length === 0) return null;
+
             let flat = [];
-
-            if (Array.isArray(records) && records.length > 0) {
-                records.forEach(item => {
-                    const base = {
-                        strikePrice: item.strikePrice,
-                        expiryDate: item.expiryDates || item.expiryDate,
-                    };
-                    if (item.CE && typeof item.CE === 'object') {
-                        flat.push({ ...base, ...item.CE, optionType: 'CE', identifier: item.CE.identifier || `CE_${item.strikePrice}` });
-                    }
-                    if (item.PE && typeof item.PE === 'object') {
-                        flat.push({ ...base, ...item.PE, optionType: 'PE', identifier: item.PE.identifier || `PE_${item.strikePrice}` });
-                    }
-                });
-            }
-
-            if (flat.length === 0 && Array.isArray(records) && records.length > 0 && records[0].optionType) {
-                flat = records;
-            }
-
+            records.forEach(item => {
+                const base = { strikePrice: item.strikePrice, expiryDate: item.expiryDates || item.expiryDate };
+                if (item.CE && typeof item.CE === 'object') {
+                    flat.push({ ...base, ...item.CE, optionType: 'CE' });
+                }
+                if (item.PE && typeof item.PE === 'object') {
+                    flat.push({ ...base, ...item.PE, optionType: 'PE' });
+                }
+            });
+            if (flat.length === 0 && records[0]?.optionType) flat = records;
             if (flat.length === 0) return null;
 
-            let tableHtml = `<table>
-                <thead><tr><th>Strike</th><th>Type</th><th>Last</th><th>Change %</th><th>IV</th><th>OI</th><th>Expiry</th></tr></thead><tbody>`;
+            let table = `<table><thead><tr><th>Strike</th><th>Type</th><th>Last</th><th>Change %</th><th>IV</th><th>OI</th><th>Expiry</th></tr></thead><tbody>`;
             flat.slice(0, 20).forEach(item => {
                 const isCe = item.optionType === 'CE' || (item.identifier && item.identifier.includes('CE'));
                 const badge = isCe ? 'badge-ce' : 'badge-pe';
                 const change = item.pChange ?? item.PChange;
                 const changeStr = (change !== undefined && change !== null && !isNaN(change)) ? change.toFixed(2) + '%' : '—';
-                tableHtml += `<tr>
+                const color = change > 0 ? '#4ade80' : change < 0 ? '#f87171' : '#94a3b8';
+                table += `<tr>
                     <td><strong>${item.strikePrice ?? '—'}</strong></td>
                     <td><span class="badge ${badge}">${isCe ? 'CE' : 'PE'}</span></td>
                     <td>${item.lastPrice ?? item.buyPrice1 ?? '—'}</td>
-                    <td style="color: ${change > 0 ? '#4ade80' : change < 0 ? '#f87171' : '#94a3b8'}">${changeStr}</td>
+                    <td style="color:${color}">${changeStr}</td>
                     <td>${item.impliedVolatility ?? '—'}</td>
                     <td>${item.openInterest ?? '—'}</td>
                     <td>${item.expiryDate || item.expiryDates || '—'}</td>
                 </tr>`;
             });
-            tableHtml += `</tbody></table>`;
-            if (flat.length > 20) tableHtml += `<div style="color:#64748b; margin-top:0.5rem;">… and ${flat.length - 20} more</div>`;
-            return tableHtml;
+            table += `</tbody></table>`;
+            if (flat.length > 20) table += `<div style="color:#64748b; margin-top:0.5rem;">… and ${flat.length - 20} more</div>`;
+            return table;
         }
 
-        // ---------- Direct fetch ----------
+        // ---------- 1. Direct Fetch ----------
         async function directFetch() {
             showLoading();
             try {
@@ -257,105 +213,59 @@
                         'Content-Type': 'application/json'
                     }
                 });
-
                 const text = await resp.text();
-                let json = null;
-                let tableHtml = null;
-                try { json = JSON.parse(text); } catch (_) { /* not json */ }
-
-                if (json) {
-                    tableHtml = renderTableFromJson(json);
-                }
-
-                let displayBody = text;
-                if (json) {
-                    displayBody = JSON.stringify(json, null, 2);
-                }
-
-                // If table found, prepend it
-                let finalOutput = displayBody;
-                if (tableHtml) {
-                    finalOutput = `<div style="margin-bottom:1rem; overflow-x:auto;">${tableHtml}</div><hr style="border-color:#334155; margin:1rem 0;"><strong>Raw JSON:</strong>\n${displayBody}`;
-                }
-
-                renderResult('❶ Direct Fetch (with Anon Key)', {
-                    status: resp.status + ' ' + resp.statusText,
-                    body: finalOutput
-                }, false);
-
+                renderResult('❶ Direct Fetch (with Key)', text, false, resp.status + ' ' + resp.statusText);
             } catch (err) {
-                // This is likely the CORS error
                 let msg = err.message;
                 if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-                    msg = '❌ CORS BLOCKED: The server did not return Access-Control-Allow-Origin. Use the proxy button below to see the actual response.';
+                    msg = '❌ CORS BLOCKED: The server did not return Access-Control-Allow-Origin. Use a proxy button below.';
                 }
                 renderResult('❶ Direct Fetch', msg, true);
             }
         }
 
-        // ---------- Proxy fetch (via allorigins) ----------
-        async function proxyFetch() {
+        // ---------- 2. Proxy 1 (allorigins) ----------
+        async function proxyFetch1() {
             showLoading();
-            // allorigins.win fetches the URL and returns the content.
-            // It does NOT forward custom headers (like Authorization).
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(URL)}`;
-
             try {
                 const resp = await fetch(proxyUrl);
                 const json = await resp.json();
-
-                // allorigins wraps the response in { status: { http_code: ... }, contents: ... }
-                let contents = json.contents || 'No content returned';
-                let httpCode = json.status?.http_code || 'unknown';
-
-                // Try to parse contents as JSON
-                let parsed = null;
-                let tableHtml = null;
-                try {
-                    parsed = JSON.parse(contents);
-                    tableHtml = renderTableFromJson(parsed);
-                } catch (_) { /* not json */ }
-
-                let displayBody = contents;
-                if (parsed) {
-                    displayBody = JSON.stringify(parsed, null, 2);
-                }
-
-                let finalOutput = displayBody;
-                if (tableHtml) {
-                    finalOutput = `<div style="margin-bottom:1rem; overflow-x:auto;">${tableHtml}</div><hr style="border-color:#334155; margin:1rem 0;"><strong>Raw JSON:</strong>\n${displayBody}`;
-                }
-
-                let statusMsg = `Proxy status: ${httpCode}`;
-                if (httpCode === 401 || httpCode === 403) {
-                    statusMsg += ' ⚠️ Authentication required – the proxy does not send your Anon Key. The server responded correctly, but denied access.';
-                } else if (httpCode === 200) {
-                    statusMsg += ' ✅ Data received! (CORS bypassed)';
-                }
-
-                renderResult('❷ Via CORS Proxy (no auth header)', {
-                    status: statusMsg,
-                    body: finalOutput
-                }, false);
-
+                const contents = json.contents || 'No content';
+                const httpCode = json.status?.http_code || 'unknown';
+                renderResult('❷ Via Proxy 1 (allorigins)', contents, false, `HTTP ${httpCode}`);
             } catch (err) {
-                renderResult('❷ Via CORS Proxy', 'Proxy request failed: ' + err.message, true);
+                renderResult('❷ Via Proxy 1', 'Proxy request failed: ' + err.message, true);
             }
         }
 
-        // ---------- Bind buttons ----------
-        document.getElementById('directBtn').addEventListener('click', directFetch);
-        document.getElementById('proxyBtn').addEventListener('click', proxyFetch);
+        // ---------- 3. Proxy 2 (corsproxy.io) ----------
+        async function proxyFetch2() {
+            showLoading();
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(URL)}`;
+            try {
+                const resp = await fetch(proxyUrl);
+                const text = await resp.text();
+                // corsproxy.io usually returns the raw content, but sometimes wraps it.
+                // Try to parse if it's JSON.
+                let display = text;
+                try {
+                    const parsed = JSON.parse(text);
+                    display = JSON.stringify(parsed, null, 2);
+                } catch (_) { /* keep raw */ }
+                renderResult('❸ Via Proxy 2 (corsproxy.io)', display, false, resp.status + ' ' + resp.statusText);
+            } catch (err) {
+                renderResult('❸ Via Proxy 2', 'Proxy request failed: ' + err.message, true);
+            }
+        }
 
-        // Auto-run direct fetch on load, but catch it silently? No, let the user click.
-        // Instead, show a hint.
-        output.innerHTML = `
-            <div class="info-block">
-                <strong>🔍 How to read the results:</strong><br>
-                • <strong>Direct fetch</strong> → shows the real browser error (usually CORS).<br>
-                • <strong>Proxy fetch</strong> → bypasses CORS. If you see a 401, your function requires auth (but the data exists). If you see 200 + JSON → your endpoint is working perfectly!
-            </div>
-        `;
+        // ----- Bind buttons -----
+        document.getElementById('directBtn').addEventListener('click', directFetch);
+        document.getElementById('proxyBtn').addEventListener('click', proxyFetch1);
+        document.getElementById('proxyBtn2').addEventListener('click', proxyFetch2);
+
+        // Auto-run direct on load so you see the first error immediately.
+        setTimeout(directFetch, 300);
     })();
 </script>
 </body>
