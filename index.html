@@ -3,75 +3,202 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NSE Crawler – CORS Test</title>
+    <title>NSE Option Chain Pro · Dashboard</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ----- Reset & Base ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
             background: #0b1120;
             color: #e2e8f0;
-            padding: 2rem;
+            padding: 1.5rem;
             min-height: 100vh;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
-        h1 { font-weight: 400; font-size: 1.6rem; margin-bottom: 0.2rem; }
-        h1 span { color: #60a5fa; }
-        .sub { color: #94a3b8; margin-bottom: 2rem; }
-        .btn-group {
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        header {
             display: flex;
+            justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
             gap: 1rem;
-            margin: 1.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+        h1 {
+            font-weight: 400;
+            font-size: 1.6rem;
+        }
+        h1 span {
+            color: #60a5fa;
+        }
+        .spot-box {
+            background: #1e293b;
+            padding: 0.4rem 1.2rem;
+            border-radius: 30px;
+            border: 1px solid #334155;
+            font-size: 1.1rem;
+        }
+        .spot-box strong {
+            color: #facc15;
+        }
+        .controls {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            flex-wrap: wrap;
         }
         .btn {
             background: #1e293b;
             border: none;
             color: #e2e8f0;
-            padding: 0.6rem 1.8rem;
+            padding: 0.5rem 1.5rem;
             border-radius: 30px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
             transition: 0.2s;
             border: 1px solid #334155;
         }
-        .btn:hover { background: #334155; }
-        .btn-primary { background: #2563eb; border-color: #2563eb; }
-        .btn-primary:hover { background: #1d4ed8; }
-        .btn-warning { background: #d97706; border-color: #d97706; }
-        .btn-warning:hover { background: #b45309; }
-        .btn-secondary { background: #7c3aed; border-color: #7c3aed; }
-        .btn-secondary:hover { background: #6d28d9; }
-        .result-box {
+        .btn:hover {
+            background: #334155;
+        }
+        .btn-primary {
+            background: #2563eb;
+            border-color: #2563eb;
+        }
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        .btn-warning {
+            background: #d97706;
+            border-color: #d97706;
+        }
+        .btn-warning:hover {
+            background: #b45309;
+        }
+        .status {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            padding: 0.3rem 0;
+        }
+        .status .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #1e293b;
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 0.5rem;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* ----- Table ----- */
+        .table-wrap {
+            overflow-x: auto;
             background: #1e293b;
             border-radius: 12px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
             border: 1px solid #334155;
-            overflow: auto;
-        }
-        .result-box h3 {
-            font-weight: 400;
-            color: #94a3b8;
-            margin-bottom: 0.8rem;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .raw {
-            font-family: 'JetBrains Mono', 'Fira Code', monospace;
-            font-size: 0.8rem;
-            white-space: pre-wrap;
-            word-break: break-word;
-            max-height: 500px;
-            overflow: auto;
-            color: #cbd5e1;
-            background: #0f172a;
-            padding: 1rem;
-            border-radius: 8px;
+            padding: 0.5rem 0;
             margin-top: 0.5rem;
         }
-        .error-msg { color: #f87171; padding: 0.5rem 0; }
-        .success-msg { color: #4ade80; padding: 0.5rem 0; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 700px;
+        }
+        th {
+            text-align: center;
+            padding: 0.6rem 0.4rem;
+            background: #0f172a;
+            color: #94a3b8;
+            font-weight: 500;
+            border-bottom: 2px solid #2d3748;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+        td {
+            text-align: center;
+            padding: 0.4rem 0.3rem;
+            border-bottom: 1px solid #2d3748;
+            vertical-align: middle;
+            position: relative;
+        }
+        .strike-cell {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .atm-row {
+            outline: 2px solid #005eff;
+            outline-offset: -1px;
+            background: rgba(0, 94, 255, 0.08);
+        }
+
+        /* ----- Heatmap classes (applied to cells) ----- */
+        .ce-oi {
+            background: #ffb3b3 !important;
+        }
+        .pe-oi {
+            background: #00FF88 !important;
+        }
+        .ce-chg {
+            background: #ffb3b3 !important;
+        }
+        .pe-chg {
+            background: #00FF88 !important;
+        }
+        .vol {
+            background: #00F7FF !important;
+        }
+        .yellow {
+            background: #F7FF00 !important;
+        }
+
+        .pos {
+            color: #4ade80 !important;
+            font-weight: 700;
+        }
+        .neg {
+            color: #f87171 !important;
+            font-weight: 700;
+        }
+
+        .pct {
+            display: block;
+            font-size: 0.6rem;
+            opacity: 0.8;
+            font-weight: 700;
+            margin-top: 2px;
+            color: #000;
+        }
+        .net-oi {
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        /* ----- Error / Info ----- */
+        .error-msg {
+            color: #f87171;
+            padding: 1rem;
+            text-align: center;
+            background: #2d1f1f;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
         .info-block {
             background: #0f172a;
             padding: 1rem 1.5rem;
@@ -81,192 +208,376 @@
             color: #fde68a;
             font-size: 0.9rem;
         }
-        .spinner {
-            display: inline-block;
-            width: 18px;
-            height: 18px;
-            border: 2px solid #1e293b;
-            border-top-color: #60a5fa;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            margin-right: 0.5rem;
-            vertical-align: middle;
+        .hidden {
+            display: none !important;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
+        .text-muted {
+            color: #94a3b8;
         }
-        th { text-align: left; padding: 0.5rem 0.8rem; background: #0f172a; color: #94a3b8; border-bottom: 1px solid #334155; }
-        td { padding: 0.4rem 0.8rem; border-bottom: 1px solid #2d3748; }
-        .badge {
-            display: inline-block; padding: 0.1rem 0.5rem; border-radius: 12px;
-            font-size: 0.65rem; font-weight: 600;
+
+        /* Scrollable table body */
+        .table-scroll {
+            max-height: 70vh;
+            overflow-y: auto;
         }
-        .badge-ce { background: #1e3a5f; color: #60a5fa; }
-        .badge-pe { background: #5f1e3a; color: #f472b6; }
+        .table-scroll table thead {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+        }
+        /* Column widths */
+        .col-strike {
+            min-width: 70px;
+        }
+        .col-num {
+            min-width: 60px;
+        }
+        .col-small {
+            min-width: 50px;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>📡 <span>New</span> Crawler · CORS Test</h1>
-    <div class="sub">Endpoint: <code style="color:#60a5fa;">/crawler</code> &nbsp;|&nbsp; Auth: Anon Key</div>
+    <div class="container">
+        <header>
+            <h1>📡 <span>NSE</span> Option Chain · Pro Dashboard</h1>
+            <div class="controls">
+                <span class="spot-box" id="spotDisplay">Spot: <strong id="spotValue">—</strong></span>
+                <button class="btn btn-primary" id="refreshBtn">⟳ Refresh</button>
+                <button class="btn btn-warning" id="toggleProxyBtn">🌐 Use Proxy</button>
+                <span id="statusMsg" class="status">Ready</span>
+            </div>
+        </header>
 
-    <div class="btn-group">
-        <button class="btn btn-primary" id="directBtn">❶ Direct Fetch (with Key)</button>
-        <button class="btn btn-warning" id="proxyBtn">❷ Via Proxy 1 (allorigins)</button>
-        <button class="btn btn-secondary" id="proxyBtn2">❸ Via Proxy 2 (corsproxy.io)</button>
+        <div id="errorContainer"></div>
+
+        <div class="table-wrap">
+            <div class="table-scroll" id="tableScroll">
+                <table id="optionTable">
+                    <thead>
+                        <tr>
+                            <th class="col-strike">Strike</th>
+                            <th class="col-num">CE OI</th>
+                            <th class="col-small">CE Chg</th>
+                            <th class="col-num">CE Vol</th>
+                            <th class="col-num">CE LTP</th>
+                            <th class="col-num">PE LTP</th>
+                            <th class="col-num">PE Vol</th>
+                            <th class="col-small">PE Chg</th>
+                            <th class="col-num">PE OI</th>
+                            <th class="col-num">Net OI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="10" class="text-muted" style="padding:2rem;">Loading data…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="info-block" id="infoBox">
+            ⚡ Auto‑refresh every 2.5s · ATM ±5 strikes highlighted · Heatmap: max = bright, ≥75% = yellow
+        </div>
     </div>
 
-    <div id="output">
-        <div class="info-block">Click a button above. If direct fails with CORS, try the proxies — they bypass the browser restriction.</div>
-    </div>
-</div>
+    <script>
+        (function() {
+            'use strict';
 
-<script>
-    (function() {
-        const URL = 'https://lvionokaieygaarmcuwo.supabase.co/functions/v1/crawler';
-        const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2aW9ub2thaWV5Z2Fhcm1jdXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0OTA0OTAsImV4cCI6MjEwMzA2NjQ5MH0.Dew0TZDaaL_v8F2VtdRoNza9kis22vf6wg7iklE692Q';
+            // ---------- Configuration ----------
+            const ENDPOINT = 'https://lvionokaieygaarmcuwo.supabase.co/functions/v1/crawler';
+            const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx2aW9ub2thaWV5Z2Fhcm1jdXdvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0OTA0OTAsImV4cCI6MjEwMzA2NjQ5MH0.Dew0TZDaaL_v8F2VtdRoNza9kis22vf6wg7iklE692Q';
+            const RANGE = 5; // ±5 strikes
+            const REFRESH_MS = 2500;
 
-        const output = document.getElementById('output');
+            let useProxy = false;
+            let refreshTimer = null;
 
-        function showLoading() {
-            output.innerHTML = `<div class="result-box"><span class="spinner"></span> Request in progress...</div>`;
-        }
+            // DOM refs
+            const tbody = document.getElementById('tableBody');
+            const spotValueEl = document.getElementById('spotValue');
+            const statusMsg = document.getElementById('statusMsg');
+            const errorContainer = document.getElementById('errorContainer');
+            const toggleProxyBtn = document.getElementById('toggleProxyBtn');
+            const refreshBtn = document.getElementById('refreshBtn');
 
-        function renderResult(title, body, isError = false, status = '') {
-            let html = `<div class="result-box"><h3>${title}</h3>`;
-            if (status) {
-                html += `<div style="color:#94a3b8; margin-bottom:0.5rem;">Status: ${status}</div>`;
+            // ---------- Helpers ----------
+            function parseNum(v) {
+                if (!v) return 0;
+                if (typeof v === 'number') return v;
+                const cleaned = String(v).replace(/,/g, '').replace(/--/g, '0');
+                const num = parseFloat(cleaned);
+                return isNaN(num) ? 0 : num;
             }
-            if (isError) {
-                html += `<div class="error-msg">❌ ${body}</div>`;
-            } else {
-                html += `<div class="success-msg">✅ Request completed</div>`;
-                // If body is JSON, try to pretty print
-                let display = body;
-                try {
-                    const parsed = JSON.parse(body);
-                    display = JSON.stringify(parsed, null, 2);
-                    // Try to render a table if it's CE/PE data
-                    const tableHtml = tryRenderTable(parsed);
-                    if (tableHtml) {
-                        display = tableHtml + '<hr style="border-color:#334155; margin:1rem 0;" />' + display;
+
+            function setStatus(msg, loading = false) {
+                statusMsg.innerHTML = loading ?
+                    `<span class="spinner"></span> ${msg}` :
+                    msg;
+            }
+
+            function showError(msg) {
+                errorContainer.innerHTML = `<div class="error-msg">❌ ${msg}</div>`;
+            }
+
+            function clearError() {
+                errorContainer.innerHTML = '';
+            }
+
+            // ---------- Fetch with proxy fallback ----------
+            async function fetchData() {
+                let url = ENDPOINT;
+                if (useProxy) {
+                    // Use allorigins as proxy
+                    url = `https://api.allorigins.win/get?url=${encodeURIComponent(ENDPOINT)}`;
+                }
+
+                const headers = {};
+                if (!useProxy) {
+                    headers['Authorization'] = `Bearer ${ANON_KEY}`;
+                    headers['Content-Type'] = 'application/json';
+                }
+
+                const response = await fetch(url, { headers });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                let data;
+                if (useProxy) {
+                    const proxyJson = await response.json();
+                    // allorigins wraps content in .contents
+                    data = JSON.parse(proxyJson.contents);
+                } else {
+                    data = await response.json();
+                }
+                return data;
+            }
+
+            // ---------- Extract option chain from JSON ----------
+            function extractChain(data) {
+                // Try to find records.data
+                let records = data.records?.data || data.data || data.rawData?.records?.data || [];
+                if (!Array.isArray(records) || records.length === 0) {
+                    throw new Error('No option chain data found in response.');
+                }
+
+                // Try to get spot from underlyingValue or first strike
+                let spot = data.underlyingValue || data.spot || data.underlying || null;
+                if (!spot || isNaN(spot)) {
+                    // Try to infer from strikes: find the one with highest total OI? Or just use median.
+                    // For simplicity, we'll compute ATM as the strike closest to the median of strikes.
+                    const strikes = records.map(item => parseNum(item.strikePrice)).filter(v => v > 0);
+                    if (strikes.length) {
+                        const sorted = strikes.sort((a, b) => a - b);
+                        spot = sorted[Math.floor(sorted.length / 2)];
+                    } else {
+                        spot = 0;
                     }
-                } catch (_) { /* keep as is */ }
-                html += `<div class="raw">${display}</div>`;
+                }
+                spot = parseNum(spot);
+
+                // Build array of items with CE/PE
+                const items = records.map(item => {
+                    const strike = parseNum(item.strikePrice);
+                    const ce = item.CE || item.ce || {};
+                    const pe = item.PE || item.pe || {};
+                    return {
+                        strike,
+                        ce: {
+                            oi: parseNum(ce.openInterest || ce.oi),
+                            chg: parseNum(ce.changeInOpenInterest || ce.changeinOpenInterest || ce.chg),
+                            vol: parseNum(ce.totalTradedVolume || ce.volume || ce.vol),
+                            ltp: parseNum(ce.lastPrice || ce.ltp),
+                        },
+                        pe: {
+                            oi: parseNum(pe.openInterest || pe.oi),
+                            chg: parseNum(pe.changeInOpenInterest || pe.changeinOpenInterest || pe.chg),
+                            vol: parseNum(pe.totalTradedVolume || pe.volume || pe.vol),
+                            ltp: parseNum(pe.lastPrice || pe.ltp),
+                        }
+                    };
+                }).filter(item => item.strike > 0);
+
+                if (items.length === 0) {
+                    throw new Error('No valid strike data found.');
+                }
+
+                return { spot, items };
             }
-            html += `</div>`;
-            output.innerHTML = html;
-        }
 
-        // Attempt to render CE/PE data as a table (for convenience)
-        function tryRenderTable(json) {
-            let records = json.rawData?.records?.data || json.records?.data || json.data || [];
-            if (!Array.isArray(records) || records.length === 0) return null;
-
-            let flat = [];
-            records.forEach(item => {
-                const base = { strikePrice: item.strikePrice, expiryDate: item.expiryDates || item.expiryDate };
-                if (item.CE && typeof item.CE === 'object') {
-                    flat.push({ ...base, ...item.CE, optionType: 'CE' });
-                }
-                if (item.PE && typeof item.PE === 'object') {
-                    flat.push({ ...base, ...item.PE, optionType: 'PE' });
-                }
-            });
-            if (flat.length === 0 && records[0]?.optionType) flat = records;
-            if (flat.length === 0) return null;
-
-            let table = `<table><thead><tr><th>Strike</th><th>Type</th><th>Last</th><th>Change %</th><th>IV</th><th>OI</th><th>Expiry</th></tr></thead><tbody>`;
-            flat.slice(0, 20).forEach(item => {
-                const isCe = item.optionType === 'CE' || (item.identifier && item.identifier.includes('CE'));
-                const badge = isCe ? 'badge-ce' : 'badge-pe';
-                const change = item.pChange ?? item.PChange;
-                const changeStr = (change !== undefined && change !== null && !isNaN(change)) ? change.toFixed(2) + '%' : '—';
-                const color = change > 0 ? '#4ade80' : change < 0 ? '#f87171' : '#94a3b8';
-                table += `<tr>
-                    <td><strong>${item.strikePrice ?? '—'}</strong></td>
-                    <td><span class="badge ${badge}">${isCe ? 'CE' : 'PE'}</span></td>
-                    <td>${item.lastPrice ?? item.buyPrice1 ?? '—'}</td>
-                    <td style="color:${color}">${changeStr}</td>
-                    <td>${item.impliedVolatility ?? '—'}</td>
-                    <td>${item.openInterest ?? '—'}</td>
-                    <td>${item.expiryDate || item.expiryDates || '—'}</td>
-                </tr>`;
-            });
-            table += `</tbody></table>`;
-            if (flat.length > 20) table += `<div style="color:#64748b; margin-top:0.5rem;">… and ${flat.length - 20} more</div>`;
-            return table;
-        }
-
-        // ---------- 1. Direct Fetch ----------
-        async function directFetch() {
-            showLoading();
-            try {
-                const resp = await fetch(URL, {
-                    headers: {
-                        'Authorization': `Bearer ${ANON_KEY}`,
-                        'Content-Type': 'application/json'
+            // ---------- Render table ----------
+            function renderDashboard(spot, items) {
+                // Find ATM strike (closest to spot)
+                let atmStrike = null;
+                let minDiff = Infinity;
+                items.forEach(item => {
+                    const diff = Math.abs(item.strike - spot);
+                    if (diff < minDiff) {
+                        minDiff = diff;
+                        atmStrike = item.strike;
                     }
                 });
-                const text = await resp.text();
-                renderResult('❶ Direct Fetch (with Key)', text, false, resp.status + ' ' + resp.statusText);
-            } catch (err) {
-                let msg = err.message;
-                if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
-                    msg = '❌ CORS BLOCKED: The server did not return Access-Control-Allow-Origin. Use a proxy button below.';
+
+                if (atmStrike === null) {
+                    throw new Error('Could not determine ATM strike.');
                 }
-                renderResult('❶ Direct Fetch', msg, true);
-            }
-        }
 
-        // ---------- 2. Proxy 1 (allorigins) ----------
-        async function proxyFetch1() {
-            showLoading();
-            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(URL)}`;
-            try {
-                const resp = await fetch(proxyUrl);
-                const json = await resp.json();
-                const contents = json.contents || 'No content';
-                const httpCode = json.status?.http_code || 'unknown';
-                renderResult('❷ Via Proxy 1 (allorigins)', contents, false, `HTTP ${httpCode}`);
-            } catch (err) {
-                renderResult('❷ Via Proxy 1', 'Proxy request failed: ' + err.message, true);
-            }
-        }
+                // Filter within ±RANGE strikes (each strike step is 50, so range = RANGE*50)
+                const visible = items.filter(item => Math.abs(item.strike - atmStrike) <= RANGE * 50);
+                if (visible.length === 0) {
+                    throw new Error('No strikes within ±5 of ATM.');
+                }
 
-        // ---------- 3. Proxy 2 (corsproxy.io) ----------
-        async function proxyFetch2() {
-            showLoading();
-            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(URL)}`;
-            try {
-                const resp = await fetch(proxyUrl);
-                const text = await resp.text();
-                // corsproxy.io usually returns the raw content, but sometimes wraps it.
-                // Try to parse if it's JSON.
-                let display = text;
+                // Sort by strike ascending
+                visible.sort((a, b) => a.strike - b.strike);
+
+                // Prepare arrays for heatmap
+                const ceOI = [];
+                const peOI = [];
+                const ceChg = [];
+                const peChg = [];
+                const ceVol = [];
+                const peVol = [];
+
+                visible.forEach(item => {
+                    ceOI.push(item.ce.oi);
+                    peOI.push(item.pe.oi);
+                    ceChg.push(item.ce.chg);
+                    peChg.push(item.pe.chg);
+                    ceVol.push(item.ce.vol);
+                    peVol.push(item.pe.vol);
+                });
+
+                // Max values for heatmap
+                const maxCeOI = Math.max(...ceOI, 1);
+                const maxPeOI = Math.max(...peOI, 1);
+                const maxCeChg = Math.max(...ceChg.map(Math.abs), 1);
+                const maxPeChg = Math.max(...peChg.map(Math.abs), 1);
+                const maxCeVol = Math.max(...ceVol, 1);
+                const maxPeVol = Math.max(...peVol, 1);
+
+                // Build table rows
+                let html = '';
+                visible.forEach((item, idx) => {
+                    const isAtm = (item.strike === atmStrike);
+                    const ce = item.ce;
+                    const pe = item.pe;
+
+                    // Compute pct for heatmap (based on max)
+                    const pctCeOI = (ce.oi / maxCeOI) * 100;
+                    const pctPeOI = (pe.oi / maxPeOI) * 100;
+                    const pctCeChg = (Math.abs(ce.chg) / maxCeChg) * 100;
+                    const pctPeChg = (Math.abs(pe.chg) / maxPeChg) * 100;
+                    const pctCeVol = (ce.vol / maxCeVol) * 100;
+                    const pctPeVol = (pe.vol / maxPeVol) * 100;
+
+                    // Determine classes for heatmap (max = specific class, >=75% = yellow)
+                    const ceOICls = (ce.oi === maxCeOI) ? 'ce-oi' : (pctCeOI >= 75 ? 'yellow' : '');
+                    const peOICls = (pe.oi === maxPeOI) ? 'pe-oi' : (pctPeOI >= 75 ? 'yellow' : '');
+                    const ceChgCls = (Math.abs(ce.chg) === maxCeChg) ? 'ce-chg' : (pctCeChg >= 75 ? 'yellow' : '');
+                    const peChgCls = (Math.abs(pe.chg) === maxPeChg) ? 'pe-chg' : (pctPeChg >= 75 ? 'yellow' : '');
+                    const ceVolCls = (ce.vol === maxCeVol) ? 'vol' : (pctCeVol >= 75 ? 'yellow' : '');
+                    const peVolCls = (pe.vol === maxPeVol) ? 'vol' : (pctPeVol >= 75 ? 'yellow' : '');
+
+                    // Change sign classes
+                    const ceChgSign = ce.chg > 0 ? 'pos' : (ce.chg < 0 ? 'neg' : '');
+                    const peChgSign = pe.chg > 0 ? 'pos' : (pe.chg < 0 ? 'neg' : '');
+
+                    // Net OI = PE OI - CE OI
+                    const netOI = pe.oi - ce.oi;
+                    const netCls = netOI >= 0 ? 'pos' : 'neg';
+
+                    // Row class for ATM
+                    const rowCls = isAtm ? 'atm-row' : '';
+
+                    html += `<tr class="${rowCls}">`;
+                    html += `<td class="strike-cell">${item.strike}</td>`;
+
+                    // CE OI
+                    html += `<td class="${ceOICls}">${ce.oi.toLocaleString()}
+                                <span class="pct">${Math.round(pctCeOI)}%</span></td>`;
+                    // CE Chg
+                    html += `<td class="${ceChgCls} ${ceChgSign}">${ce.chg > 0 ? '+' : ''}${ce.chg.toLocaleString()}
+                                <span class="pct">${Math.round(pctCeChg)}%</span></td>`;
+                    // CE Vol
+                    html += `<td class="${ceVolCls}">${ce.vol.toLocaleString()}
+                                <span class="pct">${Math.round(pctCeVol)}%</span></td>`;
+                    // CE LTP
+                    html += `<td>${ce.ltp.toFixed(2)}</td>`;
+                    // PE LTP
+                    html += `<td>${pe.ltp.toFixed(2)}</td>`;
+                    // PE Vol
+                    html += `<td class="${peVolCls}">${pe.vol.toLocaleString()}
+                                <span class="pct">${Math.round(pctPeVol)}%</span></td>`;
+                    // PE Chg
+                    html += `<td class="${peChgCls} ${peChgSign}">${pe.chg > 0 ? '+' : ''}${pe.chg.toLocaleString()}
+                                <span class="pct">${Math.round(pctPeChg)}%</span></td>`;
+                    // PE OI
+                    html += `<td class="${peOICls}">${pe.oi.toLocaleString()}
+                                <span class="pct">${Math.round(pctPeOI)}%</span></td>`;
+                    // Net OI
+                    html += `<td class="${netCls}">${netOI >= 0 ? '+' : ''}${netOI.toLocaleString()}</td>`;
+
+                    html += '</tr>';
+                });
+
+                tbody.innerHTML = html;
+                spotValueEl.textContent = spot.toFixed(2);
+
+                // Show number of rows
+                setStatus(`✅ ${visible.length} strikes · ATM ${atmStrike}`);
+            }
+
+            // ---------- Main refresh ----------
+            async function refreshData() {
+                clearError();
+                setStatus('Fetching data…', true);
+
                 try {
-                    const parsed = JSON.parse(text);
-                    display = JSON.stringify(parsed, null, 2);
-                } catch (_) { /* keep raw */ }
-                renderResult('❸ Via Proxy 2 (corsproxy.io)', display, false, resp.status + ' ' + resp.statusText);
-            } catch (err) {
-                renderResult('❸ Via Proxy 2', 'Proxy request failed: ' + err.message, true);
+                    const data = await fetchData();
+                    const { spot, items } = extractChain(data);
+                    renderDashboard(spot, items);
+                } catch (err) {
+                    console.error(err);
+                    showError(err.message || 'Failed to load data. Check console.');
+                    setStatus('❌ Error');
+                    tbody.innerHTML =
+                        `<tr><td colspan="10" class="text-muted" style="padding:2rem;">${err.message || 'Failed to load'}</td></tr>`;
+                }
             }
-        }
 
-        // ----- Bind buttons -----
-        document.getElementById('directBtn').addEventListener('click', directFetch);
-        document.getElementById('proxyBtn').addEventListener('click', proxyFetch1);
-        document.getElementById('proxyBtn2').addEventListener('click', proxyFetch2);
+            // ---------- Toggle proxy ----------
+            function toggleProxy() {
+                useProxy = !useProxy;
+                toggleProxyBtn.textContent = useProxy ? '🌐 Using Proxy' : '🌐 Use Proxy';
+                toggleProxyBtn.classList.toggle('btn-warning', useProxy);
+                toggleProxyBtn.classList.toggle('btn-primary', !useProxy);
+                refreshData();
+            }
 
-        // Auto-run direct on load so you see the first error immediately.
-        setTimeout(directFetch, 300);
-    })();
-</script>
+            // ---------- Start auto-refresh ----------
+            function startAutoRefresh() {
+                if (refreshTimer) clearInterval(refreshTimer);
+                refreshTimer = setInterval(refreshData, REFRESH_MS);
+            }
+
+            // ---------- Init ----------
+            async function init() {
+                // Bind events
+                refreshBtn.addEventListener('click', refreshData);
+                toggleProxyBtn.addEventListener('click', toggleProxy);
+
+                // First load
+                await refreshData();
+                startAutoRefresh();
+            }
+
+            // Run
+            init();
+
+        })();
+    </script>
 </body>
 </html>
