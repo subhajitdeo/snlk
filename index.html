@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NIFTY 期权数据 · 用户资料提取</title>
+    <!-- Font Awesome 图标库 (免费) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <style>
+        /* ----- 全局重置 & 主题 ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            background: #f6f9fc;
+            color: #1e293b;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        /* ----- 头部 ----- */
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .header h1 {
+            font-weight: 600;
+            font-size: 1.9rem;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header h1 i {
+            color: #2563eb;
+            font-size: 2rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        /* ----- 按钮风格 ----- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.4rem;
+            border: none;
+            border-radius: 30px;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s ease;
+            background: white;
+            color: #1e293b;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+            border-color: #16a34a;
+        }
+        .btn-success:hover {
+            background: #15803d;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(22, 163, 74, 0.25);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-outline:hover {
+            background: #f1f5f9;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            transform: none !important;
+        }
+
+        /* ----- 统计卡片 ----- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1rem 1.2rem;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            border: 1px solid #eef2f6;
+        }
+
+        .stat-card .label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: #64748b;
+        }
+
+        .stat-card .value {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin-top: 0.2rem;
+        }
+
+        /* ----- 表格容器 ----- */
+        .table-wrapper {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #eef2f6;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            margin-bottom: 2rem;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            padding: 0.5rem 0.5rem 0 0.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            min-width: 900px;
+        }
+
+        th {
+            text-align: left;
+            padding: 0.9rem 0.8rem;
+            background: #f8fafc;
+            font-weight: 600;
+            color: #334155;
+            border-bottom: 2px solid #e2e8f0;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background: #fafcff;
+        }
+
+        .strike-badge {
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        .option-type {
+            display: inline-block;
+            padding: 0.15rem 0.6rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .type-ce {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        .type-pe {
+            background: #fce7f3;
+            color: #be185d;
+        }
+
+        .price-up {
+            color: #16a34a;
+        }
+        .price-down {
+            color: #dc2626;
+        }
+
+        .checkbox-cell {
+            text-align: center;
+            width: 40px;
+        }
+
+        .checkbox-cell input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+
+        /* ----- 选中提示条 ----- */
+        .selection-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1.5rem;
+            background: #f0f7ff;
+            border-top: 1px solid #dbeafe;
+            gap: 0.8rem;
+        }
+
+        .selection-bar .info {
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            font-size: 0.95rem;
+        }
+
+        .selection-bar .info i {
+            color: #2563eb;
+        }
+
+        /* ----- 用户资料卡片 (提取目标) ----- */
+        .profile-card {
+            background: white;
+            border-radius: 20px;
+            border: 1px solid #eef2f6;
+            padding: 1.8rem 2rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+        }
+
+        .profile-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-card h3 i {
+            color: #2563eb;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem 1.5rem;
+        }
+
+        .profile-item {
+            border-bottom: 1px dashed #e2e8f0;
+            padding-bottom: 0.4rem;
+        }
+
+        .profile-item .p-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #64748b;
+            letter-spacing: 0.3px;
+        }
+
+        .profile-item .p-value {
+            font-weight: 500;
+            font-size: 0.95rem;
+            word-break: break-all;
+        }
+
+        .profile-empty {
+            color: #94a3b8;
+            font-style: italic;
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 1.2rem 0;
+        }
+
+        /* ----- Toast 通知 ----- */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #0f172a;
+            color: white;
+            padding: 0.9rem 1.8rem;
+            border-radius: 50px;
+            font-weight: 500;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            transform: translateY(120px);
+            opacity: 0;
+            transition: 0.3s ease;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* ----- 响应式微调 ----- */
+        @media (max-width: 640px) {
+            .header h1 {
+                font-size: 1.4rem;
+            }
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            .selection-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ========== 头部 ========== -->
+    <div class="header">
+        <h1>
+            <i class="fas fa-chart-line"></i>
+            NIFTY 期权链
+        </h1>
+        <div class="header-actions">
+            <button class="btn btn-primary" id="fetchBtn">
+                <i class="fas fa-cloud-download-alt"></i> 获取数据
+            </button>
+            <button class="btn btn-success" id="extractBtn" disabled>
+                <i class="fas fa-user-plus"></i> 提取选中到资料
+            </button>
+            <button class="btn btn-outline" id="clearSelectionBtn">
+                <i class="fas fa-times"></i> 清空选择
+            </button>
+        </div>
+    </div>
+
+    <!-- ========== 统计卡片 ========== -->
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+            <div class="label">总行数</div>
+            <div class="value" id="totalRows">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">已选</div>
+            <div class="value" id="selectedCount">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">最新 expiry</div>
+            <div class="value" id="latestExpiry" style="font-size:1.1rem;">—</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Underlying</div>
+            <div class="value" id="underlyingValue" style="font-size:1.1rem;">—</div>
+        </div>
+    </div>
+
+    <!-- ========== 表格 ========== -->
+    <div class="table-wrapper">
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:40px;">
+                            <input type="checkbox" id="selectAll" title="全选/取消全选" />
+                        </th>
+                        <th>行权价</th>
+                        <th>类型</th>
+                        <th>最新价</th>
+                        <th>涨跌幅 %</th>
+                        <th>隐含波动率</th>
+                        <th>未平仓</th>
+                        <th>成交量</th>
+                        <th>到期日</th>
+                        <th>标识</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="10" style="text-align:center; padding:3rem 0; color:#94a3b8;">
+                            <i class="fas fa-database" style="font-size:1.5rem; display:block; margin-bottom:0.5rem;"></i>
+                            点击「获取数据」加载期权链
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 底部选择栏 -->
+        <div class="selection-bar">
+            <div class="info">
+                <i class="fas fa-check-circle"></i>
+                <span>已选 <strong id="footerSelectedCount">0</strong> 项</span>
+                <span style="color:#64748b; font-size:0.85rem;">
+                    <i class="far fa-clock"></i> 数据来源: NSE
+                </span>
+            </div>
+            <div>
+                <button class="btn btn-success" id="extractBtnFooter" disabled style="padding:0.4rem 1.2rem; font-size:0.85rem;">
+                    <i class="fas fa-user-plus"></i> 提取到资料
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== 用户资料卡片 ========== -->
+    <div class="profile-card" id="profileCard">
+        <h3><i class="fas fa-id-card"></i> 用户资料 · 已提取的期权</h3>
+        <div class="profile-grid" id="profileGrid">
+            <div class="profile-empty">暂无数据，请从表格中勾选期权并点击「提取」</div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ========== Toast ========== -->
+<div class="toast" id="toast">
+    <i class="fas fa-check-circle" style="color:#4ade80;"></i>
+    <span id="toastMessage">已提取</span>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+
+        // ---------- DOM 引用 ----------
+        const fetchBtn = document.getElementById('fetchBtn');
+        const extractBtn = document.getElementById('extractBtn');
+        const extractBtnFooter = document.getElementById('extractBtnFooter');
+        const clearSelectionBtn = document.getElementById('clearSelectionBtn');
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const tableBody = document.getElementById('tableBody');
+        const totalRowsEl = document.getElementById('totalRows');
+        const selectedCountEl = document.getElementById('selectedCount');
+        const footerSelectedCount = document.getElementById('footerSelectedCount');
+        const latestExpiryEl = document.getElementById('latestExpiry');
+        const underlyingValueEl = document.getElementById('underlyingValue');
+        const profileGrid = document.getElementById('profileGrid');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+
+        // ---------- 状态 ----------
+        let currentData = [];          // 存储所有期权行 (扁平数组)
+        let selectedIndices = new Set(); // 存储选中行的索引 (基于 currentData)
+        let profileItems = [];          // 已提取到资料的项目 (存对象副本)
+
+        // ---------- 工具函数 ----------
+        function showToast(msg, isError = false) {
+            toastMessage.textContent = msg;
+            toast.style.background = isError ? '#b91c1c' : '#0f172a';
+            toast.querySelector('i').style.color = isError ? '#fca5a5' : '#4ade80';
+            toast.classList.add('show');
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(() => toast.classList.remove('show'), 2600);
+        }
+
+        // 格式化数字
+        function fmtNum(v) {
+            if (v === undefined || v === null) return '—';
+            const n = Number(v);
+            if (Number.isNaN(n)) return '—';
+            if (Number.isInteger(n)) return n.toString();
+            return n.toFixed(2);
+        }
+
+        function fmtPct(v) {
+            if (v === undefined || v === null) return '—';
+            const n = Number(v);
+            if (Number.isNaN(n)) return '—';
+            return n.toFixed(2) + '%';
+        }
+
+        // 更新统计 & 全选状态
+        function updateStatsAndUI() {
+            const total = currentData.length;
+            totalRowsEl.textContent = total || '—';
+
+            // 更新选中数量
+            const sel = selectedIndices.size;
+            selectedCountEl.textContent = sel;
+            footerSelectedCount.textContent = sel;
+
+            // 启用/禁用提取按钮
+            const hasSelection = sel > 0;
+            extractBtn.disabled = !hasSelection;
+            extractBtnFooter.disabled = !hasSelection;
+
+            // 全选checkbox状态
+            if (total > 0) {
+                selectAllCheckbox.checked = (sel === total);
+                selectAllCheckbox.indeterminate = (sel > 0 && sel < total);
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+
+            // 更新底层 & expiry (取第一条)
+            if (total > 0) {
+                const first = currentData[0];
+                underlyingValueEl.textContent = first.underlying || first.underlyingValue || '—';
+                latestExpiryEl.textContent = first.expiryDate || first.expiryDates || '—';
+            } else {
+                underlyingValueEl.textContent = '—';
+                latestExpiryEl.textContent = '—';
+            }
+        }
+
+        // ---------- 渲染表格 ----------
+        function renderTable(data) {
+            if (!data || data.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="10" style="text-align:center; padding:3rem 0; color:#94a3b8;">
+                            <i class="fas fa-database" style="font-size:1.5rem; display:block; margin-bottom:0.5rem;"></i>
+                            暂无数据
+                        </td>
+                    </tr>
+                `;
+                currentData = [];
+                selectedIndices.clear();
+                updateStatsAndUI();
+                return;
+            }
+
+            // 重置选择
+            selectedIndices.clear();
+
+            let html = '';
+            data.forEach((item, idx) => {
+                const isCe = item.optionType === 'CE' || (item.identifier && item.identifier.includes('CE'));
+                const typeLabel = isCe ? 'CE' : 'PE';
+                const typeClass = isCe ? 'type-ce' : 'type-pe';
+
+                const lastPrice = item.lastPrice ?? item.buyPrice1 ?? '—';
+                const pChange = item.pChange ?? item.PChange;
+                const iv = item.impliedVolatility ?? '—';
+                const oi = item.openInterest ?? '—';
+                const volume = item.totalTradedVolume ?? '—';
+                const expiry = item.expiryDate || item.expiryDates || '—';
+                const identifier = item.identifier || '—';
+                const strike = item.strikePrice ?? '—';
+
+                // 涨跌颜色
+                let pChangeDisplay = fmtPct(pChange);
+                let pChangeClass = '';
+                if (pChange !== undefined && pChange !== null && !Number.isNaN(Number(pChange))) {
+                    const num = Number(pChange);
+                    if (num > 0) pChangeClass = 'price-up';
+                    else if (num < 0) pChangeClass = 'price-down';
+                }
+
+                html += `
+                    <tr data-index="${idx}">
+                        <td class="checkbox-cell">
+                            <input type="checkbox" class="row-checkbox" data-index="${idx}" />
+                        </td>
+                        <td class="strike-badge">${fmtNum(strike)}</td>
+                        <td><span class="option-type ${typeClass}">${typeLabel}</span></td>
+                        <td>${fmtNum(lastPrice)}</td>
+                        <td class="${pChangeClass}">${pChangeDisplay}</td>
+                        <td>${fmtNum(iv)}</td>
+                        <td>${fmtNum(oi)}</td>
+                        <td>${fmtNum(volume)}</td>
+                        <td>${expiry}</td>
+                        <td style="font-size:0.75rem; color:#475569; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${identifier}">${identifier}</td>
+                    </tr>
+                `;
+            });
+
+            tableBody.innerHTML = html;
+
+            // 给所有行checkbox绑定事件
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.addEventListener('change', function(e) {
+                    const idx = parseInt(this.dataset.index, 10);
+                    if (this.checked) {
+                        selectedIndices.add(idx);
+                    } else {
+                        selectedIndices.delete(idx);
+                    }
+                    updateStatsAndUI();
+                    // 取消全选状态 (如果手动取消某一个)
+                    if (!this.checked && selectAllCheckbox.checked) {
+                        selectAllCheckbox.checked = false;
+                    }
+                });
+            });
+
+            // 全选逻辑
+            selectAllCheckbox.addEventListener('change', function() {
+                const checked = this.checked;
+                const allCheckboxes = document.querySelectorAll('.row-checkbox');
+                allCheckboxes.forEach(cb => {
+                    cb.checked = checked;
+                    const idx = parseInt(cb.dataset.index, 10);
+                    if (checked) {
+                        selectedIndices.add(idx);
+                    } else {
+                        selectedIndices.delete(idx);
+                    }
+                });
+                updateStatsAndUI();
+            });
+
+            // 更新UI
+            updateStatsAndUI();
+        }
+
+        // ---------- 获取数据 ----------
+        async function fetchData() {
+            const url = 'https://kdneyzemvqzhwzztflvq.supabase.co/functions/v1/fetch-nse';
+
+            fetchBtn.disabled = true;
+            fetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const json = await response.json();
+                // 解析数据结构
+                let records = json.rawData?.records?.data || json.records?.data || json.data || [];
+
+                if (!Array.isArray(records) || records.length === 0) {
+                    throw new Error('返回的数据为空或格式不符');
+                }
+
+                // 展平: 每个对象可能同时包含 CE 和 PE, 拆成两条
+                const flat = [];
+                records.forEach((item) => {
+                    const base = {
+                        strikePrice: item.strikePrice,
+                        expiryDate: item.expiryDates || item.expiryDate,
+                        underlying: item.underlying || 'NIFTY',
+                        underlyingValue: item.underlyingValue,
+                    };
+                    // CE
+                    if (item.CE && typeof item.CE === 'object') {
+                        flat.push({
+                            ...base,
+                            ...item.CE,
+                            optionType: 'CE',
+                            // 保证 identifier 存在
+                            identifier: item.CE.identifier || `CE_${item.strikePrice}`,
+                        });
+                    }
+                    // PE
+                    if (item.PE && typeof item.PE === 'object') {
+                        flat.push({
+                            ...base,
+                            ...item.PE,
+                            optionType: 'PE',
+                            identifier: item.PE.identifier || `PE_${item.strikePrice}`,
+                        });
+                    }
+                });
+
+                if (flat.length === 0) {
+                    throw new Error('未找到 CE/PE 数据');
+                }
+
+                currentData = flat;
+                selectedIndices.clear();
+                renderTable(currentData);
+                showToast(`成功加载 ${flat.length} 条期权数据`);
+
+            } catch (err) {
+                console.error(err);
+                showToast('获取失败: ' + err.message, true);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="10" style="text-align:center; padding:3rem 0; color:#dc2626;">
+                            <i class="fas fa-exclamation-triangle" style="font-size:1.5rem; display:block; margin-bottom:0.5rem;"></i>
+                            ${err.message}
+                        </td>
+                    </tr>
+                `;
+                currentData = [];
+                selectedIndices.clear();
+                updateStatsAndUI();
+            } finally {
+                fetchBtn.disabled = false;
+                fetchBtn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> 获取数据';
+            }
+        }
+
+        // ---------- 提取选中到资料 ----------
+        function extractSelected() {
+            if (selectedIndices.size === 0) {
+                showToast('请先勾选至少一个期权', true);
+                return;
+            }
+
+            const selectedItems = [];
+            for (const idx of selectedIndices) {
+                if (currentData[idx]) {
+                    selectedItems.push(currentData[idx]);
+                }
+            }
+
+            if (selectedItems.length === 0) {
+                showToast('没有有效的数据可提取', true);
+                return;
+            }
+
+            // 追加到 profileItems (去重? 简单追加)
+            profileItems = profileItems.concat(selectedItems);
+
+            // 渲染资料卡片
+            renderProfile();
+
+            // 清空选择 (交互友好)
+            selectedIndices.clear();
+            // 取消所有checkbox
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+            selectAllCheckbox.checked = false;
+            updateStatsAndUI();
+
+            showToast(`成功提取 ${selectedItems.length} 项到用户资料`);
+        }
+
+        // ---------- 渲染资料卡片 ----------
+        function renderProfile() {
+            if (profileItems.length === 0) {
+                profileGrid.innerHTML = `<div class="profile-empty">暂无数据，请从表格中勾选期权并点击「提取」</div>`;
+                return;
+            }
+
+            // 显示最近提取的若干条 (最多显示20条, 避免卡片过长)
+            const display = profileItems.slice(-20).reverse();
+            let html = '';
+            display.forEach((item, i) => {
+                const strike = item.strikePrice ?? '—';
+                const type = item.optionType || (item.identifier && item.identifier.includes('CE') ? 'CE' : 'PE');
+                const last = item.lastPrice ?? item.buyPrice1 ?? '—';
+                const change = item.pChange ?? item.PChange;
+                const changeStr = change !== undefined && change !== null ? fmtPct(change) : '—';
+                const expiry = item.expiryDate || item.expiryDates || '—';
+                const iv = item.impliedVolatility ?? '—';
+                const oi = item.openInterest ?? '—';
+
+                html += `
+                    <div class="profile-item">
+                        <div class="p-label">行权价 · ${type}</div>
+                        <div class="p-value">${fmtNum(strike)} &nbsp; <span style="font-weight:400; color:#475569;">@ ${fmtNum(last)}</span></div>
+                        <div style="font-size:0.75rem; color:#64748b; margin-top:0.2rem;">
+                            ${changeStr} &nbsp;|&nbsp; IV ${fmtNum(iv)} &nbsp;|&nbsp; OI ${fmtNum(oi)}
+                            <span style="display:inline-block; margin-left:0.6rem; background:#f1f5f9; padding:0 0.5rem; border-radius:12px;">${expiry}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // 如果数量太多, 加一条提示
+            if (profileItems.length > 20) {
+                html += `
+                    <div class="profile-item" style="grid-column:1/-1; text-align:center; color:#64748b; border-bottom:none; padding-top:0.5rem;">
+                        <i class="fas fa-ellipsis-h"></i> 共 ${profileItems.length} 项，显示最近 20 项
+                    </div>
+                `;
+            }
+
+            profileGrid.innerHTML = html;
+        }
+
+        // ---------- 清空选择 ----------
+        function clearSelection() {
+            selectedIndices.clear();
+            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+            selectAllCheckbox.checked = false;
+            updateStatsAndUI();
+            showToast('已清空所有选择');
+        }
+
+        // ---------- 初始化 ----------
+        function init() {
+            // 绑定事件
+            fetchBtn.addEventListener('click', fetchData);
+            extractBtn.addEventListener('click', extractSelected);
+            extractBtnFooter.addEventListener('click', extractSelected);
+            clearSelectionBtn.addEventListener('click', clearSelection);
+
+            // 初始禁用提取按钮
+            extractBtn.disabled = true;
+            extractBtnFooter.disabled = true;
+
+            // 页面加载后自动获取一次数据
+            fetchData();
+        }
+
+        // 启动
+        init();
+
+    })();
+</script>
+
+</body>
+</html>
